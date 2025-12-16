@@ -1,2 +1,2 @@
 # employmentprojection
-using KNN to visualize and predict trend
+using neural network to predict trend of employment 2024
