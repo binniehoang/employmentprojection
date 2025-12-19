@@ -24,3 +24,6 @@ def show_column_names():
     # for col in df.columns:
     #     print(col)
     print(df.columns.tolist())
+
+
+show_column_names()
