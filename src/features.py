@@ -9,6 +9,7 @@ def select_important_features(X, y, n_features=10, random_state=42):
 	indices = importances.argsort()[::-1][:n_features]
 	selected_columns = X.columns[indices]
 	return X[selected_columns]
+
 # feature selection for employment projections dataset
 import os
 import pandas as pd
@@ -25,7 +26,12 @@ def scale_features(X):
 def load_cleaned_data(filepath='data/cleaned_employment_projections.csv'):
 	# loads the cleaned employment projections dataset from the specified CSV file
 	# returns a pandas DataFrame
-	df = pd.read_csv(filepath)
+	try:
+		df = pd.read_csv(filepath)
+	except FileNotFoundError as e:
+		raise FileNotFoundError(f"File not found: {filepath}") from e
+	except pd.errors.ParserError as e:
+		raise pd.errors.ParserError(f"Error parsing CSV file at path '{filepath}' :{e}") from e
 	return df
 	
 

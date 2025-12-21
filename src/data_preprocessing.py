@@ -1,5 +1,5 @@
 import pandas as pd
-import numpy as np
+# data preprocessing script for employment projections dataset
 
 df = pd.read_csv('data/Employment Projections.csv')
 print(f"Initial shape: {df.shape}")
@@ -19,6 +19,10 @@ essential_cols = [
 df = df.dropna(subset=essential_cols)
 print(f"Shape after dropping rows with missing values in essential columns: {df.shape}")
 
+# essential numeric columns are floats
+for col in essential_cols:
+    df[col] = pd.to_numeric(df[col].astype(str).str.replace(',', ''), errors='coerce')
+
 # Optionally fill missing values in other columns
 # df = df.fillna({'SomeColumn': value})
 
@@ -34,6 +38,8 @@ categorical_cols = [
 	'Work Experience in a Related Occupation',
 	'Typical on-the-job Training'
 ]
+
+
 
 # Only encode categorical columns that exist in the DataFrame
 cols_to_encode = [col for col in categorical_cols if col in df.columns]
