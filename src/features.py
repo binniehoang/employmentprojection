@@ -41,9 +41,9 @@ def get_features_and_target(df, target_column='Employment 2034'):
 	return X, y
 
 
-
+# encode categorical features in the input dataframe using one-hot encoding
 def encode_categorical_features(X):
-	categorical_cols = X.select_dtypes(include=['object', 'category']).columns
+	categorical_cols = X.select_dtypes(include=['object', 'category']).columns # parameters: input dataframe containing categorical and numeric features
 	X_encoded = pd.get_dummies(X, columns=categorical_cols, drop_first=True)
 	return X_encoded
 
@@ -55,18 +55,6 @@ def handle_missing_values(X, strategy='mean'):
 		return X.fillna(X.median())
 	else:  # default to mean
 		return X.fillna(X.mean())
-# def show_column_names():
-#     """
-#     Prints the column names of the cleaned employment projections dataset.
-#     """
-#     df = load_cleaned_data()
-#     print("Column names in the dataset:")
-#     for col in df.columns:
-#         print(col)
-#     print(df.columns.tolist())
-
-
-# show_column_names()
 
 
 
