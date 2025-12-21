@@ -1,9 +1,8 @@
 import os
 def select_important_features(X, y, n_features=10, random_state=42):
-	"""
-	Selects the top n_features most important features using RandomForestRegressor.
-	Returns a DataFrame with only the selected features.
-	"""
+	
+	# selects top n_features
+	
 	model = RandomForestRegressor(n_estimators=100, random_state=random_state)
 	model.fit(X, y)
 	importances = model.feature_importances_
@@ -16,10 +15,7 @@ import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.preprocessing import StandardScaler
 def scale_features(X):
-	"""
-	Scales numeric features using StandardScaler (zero mean, unit variance).
-	Returns a DataFrame with scaled features.
-	"""
+	# returns dataframe with scaled numeric features
 	scaler = StandardScaler()
 	numeric_cols = X.select_dtypes(include=['float64', 'int64']).columns
 	X_scaled = X.copy()
@@ -27,10 +23,8 @@ def scale_features(X):
 	return X_scaled
 
 def load_cleaned_data(filepath='data/cleaned_employment_projections.csv'):
-	"""
-	Loads the cleaned employment projections dataset from the specified CSV file.
-	Returns a pandas DataFrame.
-	"""
+	# loads the cleaned employment projections dataset from the specified CSV file
+	# returns a pandas DataFrame
 	df = pd.read_csv(filepath)
 	return df
 	
@@ -48,11 +42,7 @@ def encode_categorical_features(X):
 	return X_encoded
 
 def handle_missing_values(X, strategy='mean'):
-	"""
-	Handles missing values in the DataFrame X.
-	strategy: 'mean', 'median', or 'drop'
-	Returns the DataFrame with missing values handled.
-	"""
+	# handles missing values in the DataFrame X based on the specified strategy
 	if strategy == 'drop':
 		return X.dropna()
 	elif strategy == 'median':
@@ -73,22 +63,20 @@ def handle_missing_values(X, strategy='mean'):
 # show_column_names()
 
 
-if __name__ == "__main__":
-	df = load_cleaned_data()
-	# Remove commas and convert target column to float
-	df['Employment 2034'] = df['Employment 2034'].replace(',', '', regex=True).astype(float)
-	X, y = get_features_and_target(df)
-	X_encoded = encode_categorical_features(X)
-	X_encoded = handle_missing_values(X_encoded, strategy='mean')
-	X_scaled = scale_features(X_encoded)
-	X_selected = select_important_features(X_scaled, y, n_features=10)
 
-	# Save selected features and target to files for modeling
-	os.makedirs('model_data', exist_ok=True)
-	X_selected.to_csv('model_data/selected_features.csv', index=False)
-	y.to_csv('model_data/target.csv', index=False)
+df = load_cleaned_data()
+# Remove commas and convert target column to float
+df['Employment 2034'] = df['Employment 2034'].replace(',', '', regex=True).astype(float)
+X, y = get_features_and_target(df)
+X_encoded = encode_categorical_features(X)
+X_encoded = handle_missing_values(X_encoded, strategy='mean')
+X_scaled = scale_features(X_encoded)
+X_selected = select_important_features(X_scaled, y, n_features=10)
 
-	print("Top 10 selected features saved to model_data/selected_features.csv")
-	print("Target saved to model_data/target.csv")
-
-	X_encoded.to_csv('data/encoded_features.csv', index=False)
+# Save selected features and target to files for modeling
+os.makedirs('model_data', exist_ok=True)
+X_selected.to_csv('model_data/selected_features.csv', index=False)
+y.to_csv('model_data/target.csv', index=False)
+print("Top 10 selected features saved to model_data/selected_features.csv")
+print("Target saved to model_data/target.csv")
+X_encoded.to_csv('data/encoded_features.csv', index=False)
