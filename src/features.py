@@ -31,7 +31,7 @@ def load_cleaned_data(filepath='data/cleaned_employment_projections.csv'):
 	except FileNotFoundError as e:
 		raise FileNotFoundError(f"File not found: {filepath}") from e
 	except pd.errors.ParserError as e:
-		raise pd.errors.ParserError(f"Error parsing CSV file at path '{filepath}' :{e}") from e
+		raise Exception(f"Error parsing CSV file at path '{filepath}': {e}") from e
 	return df
 	
 
