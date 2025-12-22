@@ -6,7 +6,7 @@ from sklearn.metrics import mean_squared_error, r2_score
 import joblib
 import os
 import json
-import numpy as np
+from sklearn.model_selection import cross_val_score
 
 # load processed features and targets
 X = pd.read_csv('model_data/selected_features.csv')
@@ -44,8 +44,7 @@ print(f"Test MSE: {mse:.2f}")
 print(f"Test R^2: {r2:.2f}")
 
 # cross validation
-from sklearn.model_selection import cross_val_score
-cv_scores = cross_val_score(model, X, y, cv=5, scoring='r2')
+cv_scores = cross_val_score(model, X_train, y_train, cv=5, scoring='r2')
 print(f"5-fold CV R^2 scores: {cv_scores}")
 print(f"Average CV R^2 score: {cv_scores.mean():.2f}")
 
@@ -63,7 +62,6 @@ with open('model_data/training_log.json', 'w') as f:
 print("Training parameters and metrics logged to model_data/training_log.json")
 
 # save trained model
-os.makedirs('model_data', exist_ok=True)
 joblib.dump(model, 'model_data/random_forest_model.joblib')
 print("Model saved to model_data/random_forest_model.joblib")
 
