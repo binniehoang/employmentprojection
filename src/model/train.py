@@ -24,13 +24,15 @@ model_params = {
 }
 
 model = RandomForestRegressor(**model_params)
-model.fit(X_train, y_train)
 
 # cross validation
 cv_scores = cross_val_score(model, X_train, y_train, cv=5, scoring='r2')
 print(f"5-fold CV R^2 scores: {cv_scores}")
 print(f"Average CV R^2 score: {cv_scores.mean():.2f}")
 
+model.fit(X_train, y_train)
+
+# feature importance
 feature_importances = model.feature_importances_
 importance_df = pd.DataFrame({
 	'feature': X.columns,
@@ -71,11 +73,13 @@ try:
 except OSError as e:
 	print(f"Failed to write training log to model_data/logs/training_log.json: {e}")
 	raise
+else:
+	print("Training log saved to model_data/logs/training_log.json")
 # save trained model
 try:
 	joblib.dump(model, 'model_data/random_forest_model.joblib')
 	print("Model saved to model_data/random_forest_model.joblib")
-except (OSError, IOError) as e:
+except OSError as e:
 	print(f"Failed to save model to 'model_data/random_forest_model.joblib': {e}")
 	raise
 # predict on some example data

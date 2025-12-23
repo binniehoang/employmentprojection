@@ -25,7 +25,11 @@ def main():
 	result_df = X.copy()
 	result_df['Predicted Employment 2034'] = predictions
 	result_df.to_csv(output_path, index=False)
-	print(f'Predictions saved to {output_path}')
-
+	try:
+		result_df.to_csv(output_path, index=False)
+		print(f'Predictions saved to {output_path}')
+	except OSError as e:
+		print(f'Error saving predictions to {output_path}: {e}')
+		raise
 if __name__ == '__main__':
 	main()
