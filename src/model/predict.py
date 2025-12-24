@@ -2,7 +2,7 @@ import pandas as pd
 import joblib
 import os
 
-def predictmodel():
+def predict_model():
 	# Paths
 	model_path = os.path.join('model_data', 'random_forest_model.joblib')
 	features_path = os.path.join('model_data', 'selected_features.csv')
@@ -11,7 +11,7 @@ def predictmodel():
 	# Load model
 	try:
 		model = joblib.load(model_path)
-	except (FileNotFoundError, OSError, IOError) as e:
+	except (FileNotFoundError, OSError) as e:
 		print(f'Error loading model from {model_path}: {e}')
 		raise
 	except Exception as e:
@@ -46,5 +46,6 @@ def predictmodel():
 	except OSError as e:
 		print(f'Error saving predictions to {output_path}: {e}')
 		raise
-
-predictmodel()
+	
+if __name__ == '__main__':
+	predict_model()

@@ -81,9 +81,11 @@ try:
 except OSError as e:
 	print(f"Failed to save model to 'model_data/random_forest_model.joblib': {e}")
 	raise
-# predict on some example data
-example_data = X_test.iloc[:5]
-example_predictions = model.predict(example_data)
-print("Example predictions on test data:")
-print(example_predictions)
+
+if __name__ == '__main__':
+	# predict on some example data
+	example_data = X_test.iloc[:5]
+	example_predictions = model.predict(example_data)
+	print("Example predictions on test data:")
+	print(example_predictions)
 
