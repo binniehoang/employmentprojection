@@ -73,8 +73,7 @@ try:
 except OSError as e:
 	print(f"Failed to write training log to model_data/logs/training_log.json: {e}")
 	raise
-else:
-	print("Training log saved to model_data/logs/training_log.json")
+
 # save trained model
 try:
 	joblib.dump(model, 'model_data/random_forest_model.joblib')
