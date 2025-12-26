@@ -52,5 +52,6 @@ sns.heatmap(df[numeric_cols].corr(), annot=True, cmap='coolwarm', annot_kws={"si
             xticklabels=heatmap_labels, yticklabels=heatmap_labels)
 plt.title('Correlation Heatmap (2024-2034)')
 plt.tight_layout()
+plt.savefig('plots/correlation_heatmap.png')
 plt.show()
 

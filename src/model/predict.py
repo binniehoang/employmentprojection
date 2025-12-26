@@ -14,20 +14,14 @@ def predict_model():
 	except (FileNotFoundError, OSError) as e:
 		print(f'Error loading model from {model_path}: {e}')
 		raise
-	except Exception as e:
-		print(f'Unexpected error loading model from {model_path}: {e}')
-		raise
 	# Load features
 	try:
 		X = pd.read_csv(features_path)
-	except (FileNotFoundError, OSError, IOError) as e:
+	except (FileNotFoundError, OSError) as e:
 		print(f'Error loading features from {features_path}: {e}')
 		raise
 	except pd.errors.ParserError as e:
 		print(f'Error parsing features CSV at {features_path}: {e}')
-		raise
-	except Exception as e:
-		print(f'Unexpected error loading features from {features_path}: {e}')
 		raise
 
 	# Predict
