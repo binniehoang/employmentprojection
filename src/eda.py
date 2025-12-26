@@ -24,17 +24,34 @@ numeric_cols = [
     'Median Annual Wage 2024'
 ]
 os.makedirs('plots', exist_ok=True)
+column_labels = {
+    'Employment 2024': 'Employment (2024)',
+    'Employment 2034': 'Employment (2034)',
+    'Employment Change, 2024-2034': 'Employment Change (2024-2034)',
+    'Employment Percent Change, 2024-2034': 'Employment % Change (2024-2034)',
+    'Occupational Openings, 2024-2034 Annual Average': 'Annual Avg Openings (2024-2034)',
+    'Median Annual Wage 2024': 'Median Annual Wage (2024)'
+}
 for col in numeric_cols:
     if col in df.columns:
-        plt.figure(figsize=(8, 4))
+        plt.figure(figsize=(10, 5))
         sns.histplot(df[col].dropna(), kde=True)
-        plt.title(f'Distribution of {col}')
+        label = column_labels.get(col, col)
+        plt.title(f'Distribution of {label}')
+        plt.xlabel(label, fontsize=10)
+        plt.ylabel('Count', fontsize=10)
+        plt.xticks(rotation=30, ha='right', fontsize=8)
+        plt.tight_layout()
         plt.savefig(f'plots/{col}_distribution.png')
         plt.close()
 
 # Correlation heatmap
-plt.figure(figsize=(10, 8))
-sns.heatmap(df[numeric_cols].corr(), annot=True, cmap='coolwarm')
-plt.title('Correlation Heatmap of Numeric Columns')
+plt.figure(figsize=(12, 10))
+heatmap_labels = [column_labels.get(col, col) for col in numeric_cols]
+sns.heatmap(df[numeric_cols].corr(), annot=True, cmap='coolwarm', annot_kws={"size": 9},
+            xticklabels=heatmap_labels, yticklabels=heatmap_labels)
+plt.title('Correlation Heatmap (2024-2034)')
+plt.tight_layout()
+plt.savefig('plots/correlation_heatmap.png')
 plt.show()
 
