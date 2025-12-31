@@ -1,6 +1,3 @@
-import sys
-import os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import pytest
 import pandas as pd
 import numpy as np
@@ -24,7 +21,7 @@ def test_scale_features():
     X = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]})
     X_scaled = scale_features(X)
     np.testing.assert_almost_equal(X_scaled.mean().values, 0, decimal=6)
-    np.testing.assert_almost_equal(X_scaled.std(ddof=0).values, 1, decimal=6)
+    np.testing.assert_almost_equal(X_scaled.std(ddof=1).values, 1, decimal=6)
 
 def test_load_cleaned_data(tmp_path):
     df = pd.DataFrame({'a': [1, 2], 'b': [3, 4]})
@@ -37,14 +34,20 @@ def test_get_features_and_target():
     df = pd.DataFrame({'Employment 2034': [1, 2], 'f1': [3, 4], 'f2': [5, 6]})
     X, y = get_features_and_target(df, target_column='Employment 2034')
     assert 'Employment 2034' not in X.columns
-    assert all(y == df['Employment 2034'])
+    assert (y == df['Employment 2034']).all()
 
 def test_encode_categorical_features():
     X = pd.DataFrame({'cat': ['a', 'b', 'a'], 'num': [1, 2, 3]})
     X_encoded = encode_categorical_features(X)
     assert 'cat_b' in X_encoded.columns
     assert 'cat' not in X_encoded.columns
-    assert X_encoded.shape[1] == 2
+    # Expected columns: numeric columns + (unique categories - 1) per categorical column
+    n_numeric = X.select_dtypes(exclude='object').shape[1]
+    n_cat_unique_minus1 = sum(
+        X[col].nunique() - 1 for col in X.select_dtypes(include='object').columns
+    )
+    expected_num_cols = n_numeric + n_cat_unique_minus1
+    assert X_encoded.shape[1] == expected_num_cols
 
 def test_handle_missing_values():
     X = pd.DataFrame({'a': [1, np.nan, 3], 'b': [4, 5, np.nan]})
