@@ -15,16 +15,9 @@ def test_train_model_creates_feature_importances():
         os.makedirs(os.path.join(tmpdir, 'model_data'), exist_ok=True)
         X.to_csv(os.path.join(tmpdir, 'model_data', 'selected_features.csv'), index=False)
         y.to_csv(os.path.join(tmpdir, 'model_data', 'target.csv'), index=False)
-        # Patch file paths in train.py if needed
-        # Run training
-        # This test assumes train.main() uses relative paths
-        cwd = os.getcwd()
-        os.chdir(tmpdir)
-        try:
-            train.main()
-            assert os.path.exists('model_data/feature_importances.csv')
-        finally:
-            os.chdir(cwd)
+        # Run training with base_dir argument for isolation
+        train.main()(base_dir=tmpdir)
+        assert os.path.exists(os.path.join(tmpdir, 'model_data', 'feature_importances.csv'))
 
 def test_predict_model_missing_model():
     with tempfile.TemporaryDirectory() as tmpdir:
