@@ -1,8 +1,13 @@
 from src import config
 import os
-import pytest
-def test_config_loading():
-    cfg = config.load_config("tests/test_config.yaml")
+
+
+def test_config_loading(tmp_path):
+    config_file = tmp_path / "test_config.yaml"
+    config_file.write_text("setting1: value1\n"
+                           "setting2:\n" \
+                           "subsetting: 42\n")
+    cfg = config.load_config(str(config_file))
     assert cfg["setting1"] == "value1"
     assert cfg["setting2"]["subsetting"] == 42
 def test_config_paths():
@@ -18,12 +23,3 @@ def test_log_file_path():
 def test_output_directory():
     assert config.OUTPUT_DIR.endswith('output')
 
-print("BASE_DIR:", config.BASE_DIR)
-print("RAW_DATA_PATH exists:", os.path.exists(config.RAW_DATA_PATH))
-print("PROCESSED_DATA_PATH exists:", os.path.exists(config.PROCESSED_DATA_PATH))
-print("MODEL_PATH:", config.MODEL_PATH)
-print("PLOTS_DIR:", config.PLOTS_DIR)
-print("LOG_FILE_PATH:", config.LOG_FILE_PATH)
-print("MODEL_PARAMS:", config.MODEL_PARAMS)
-
-print("All config tests passed.")
