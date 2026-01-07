@@ -1,4 +1,9 @@
 # model training script
+"""
+Model training script for employment projections.
+
+Trains a RandomForestRegressor on selected features and target, evaluates performance, and saves feature importances.
+"""
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
@@ -9,17 +14,22 @@ import json
 from sklearn.model_selection import cross_val_score
 
 def main():
+	"""
+	Main function to train a RandomForestRegressor on employment projections data.
+	Loads features and target, splits data, trains model, evaluates, and saves results.
+	"""
 	import os
 	# Accept base_dir as a parameter for testability
 	def _main(base_dir="."):
+		"""
+		Internal function to allow specifying base directory for testability.
+		"""
 		# load processed features and targets
 		X = pd.read_csv(os.path.join(base_dir, 'model_data', 'selected_features.csv'))
 		y = pd.read_csv(os.path.join(base_dir, 'model_data', 'target.csv')).squeeze()
 
-
 		# split data and train
 		X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
 
 		# train randomforestregressor
 		model_params = {

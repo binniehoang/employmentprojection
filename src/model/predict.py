@@ -1,8 +1,18 @@
+
+"""
+Prediction script for employment projections model.
+
+Loads a trained model and features, generates predictions, and saves them to a CSV file.
+"""
+
 import pandas as pd
 import joblib
 import os
 
 def predict_model():
+	"""
+	Loads the trained model and features, generates predictions, prints them, and saves to CSV.
+	"""
 	# Paths
 	model_path = os.path.join('model_data', 'random_forest_model.joblib')
 	features_path = os.path.join('model_data', 'selected_features.csv')
@@ -40,6 +50,6 @@ def predict_model():
 	except OSError as e:
 		print(f'Error saving predictions to {output_path}: {e}')
 		raise
-	
+
 if __name__ == '__main__':
 	predict_model()

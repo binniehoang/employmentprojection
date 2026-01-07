@@ -1,9 +1,15 @@
+"""
+Configuration module for employment projections project.
+
+Defines file paths, model parameters, and logging settings for consistent use across the project.
+"""
+
 import os
 
 # base directory for project
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-#data file paths
+# data file paths
 DATA_DIR = os.path.join(BASE_DIR, 'data')
 RAW_DATA_PATH = os.path.join(DATA_DIR, 'Employment Projections.csv')
 PROCESSED_DATA_PATH = os.path.join(DATA_DIR, 'cleaned_employment_projections.csv')
@@ -22,7 +28,6 @@ PLOTS_DIR = os.path.join(BASE_DIR, 'plots')
 
 # model parameters
 MODEL_PARAMS = {
-    'learning_rate': 0.01,
     'n_estimators': 100,
     'random_state': 42
 }
