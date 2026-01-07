@@ -1,10 +1,25 @@
+
+"""
+Model evaluation script for employment projections.
+
+Loads a trained model and test data, evaluates predictions, and prints regression metrics.
+"""
+
 import joblib
 import pandas as pd
 from sklearn.metrics import mean_squared_error, accuracy_score
 
-
-
 def load_model(model_path):
+    """
+    Load a trained model from the specified path.
+    Args:
+        model_path (str): Path to the model file.
+    Returns:
+        Trained model object.
+    Raises:
+        FileNotFoundError: If the model file does not exist.
+        Exception: For other loading errors.
+    """
     try:
         return joblib.load(model_path)
     except FileNotFoundError:
@@ -13,8 +28,18 @@ def load_model(model_path):
     except Exception as e:
         print(f"Error: Failed to load model from '{model_path}': {e}")
         raise
-    
+
 def load_data(data_path):
+    """
+    Load a DataFrame from the specified CSV file.
+    Args:
+        data_path (str): Path to the CSV file.
+    Returns:
+        pd.DataFrame: Loaded DataFrame.
+    Raises:
+        FileNotFoundError: If the data file does not exist.
+        Exception: For other loading errors.
+    """
     try:
         return pd.read_csv(data_path)
     except FileNotFoundError:
@@ -25,6 +50,15 @@ def load_data(data_path):
         raise
 
 def evaluate_model(model, X_test, y_test):
+    """
+    Evaluate a regression model and print metrics.
+    Args:
+        model: Trained regression model.
+        X_test (pd.DataFrame): Test features.
+        y_test (pd.Series): Test target values.
+    Returns:
+        dict: Dictionary of regression metrics (mse, rmse, mae, r2).
+    """
     y_pred = model.predict(X_test)
     # regression
     mse = mean_squared_error(y_test, y_pred)
