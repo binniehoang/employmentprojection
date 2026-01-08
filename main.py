@@ -90,11 +90,11 @@ def main():
     test_data_path = config.SELECTED_FEATURES_PATH
     predictions_path = config.PREDICTIONS_PATH
     try:
-        model = evaluate.load_model(model_path)
+        evaluate.load_model(model_path)
         test_data = evaluate.load_data(test_data_path)
         predictions = pd.read_csv(predictions_path)
-        # Add your evaluation logic here
-        # For example: print regression metrics
+        print(f"Loaded test data with {len(test_data)} rows for evaluation.")
+        print(f"Loaded predictions with {len(predictions)} rows for evaluation.")
     except Exception as e:
         print(f"Evaluation failed: {e}")
 
