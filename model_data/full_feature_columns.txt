@@ -1,0 +1,25 @@
+Employment 2024
+Employment Change, 2024-2034
+Employment Percent Change, 2024-2034
+Occupational Openings, 2024-2034 Annual Average
+Median Annual Wage 2024
+Education Code
+Workex Code
+trCode
+Typical Entry-Level Education_Associate's degree
+Typical Entry-Level Education_Bachelor's degree
+Typical Entry-Level Education_Doctoral or professional degree
+Typical Entry-Level Education_High school diploma or equivalent
+Typical Entry-Level Education_Master's degree
+Typical Entry-Level Education_No formal educational credential
+Typical Entry-Level Education_Postsecondary nondegree award
+Typical Entry-Level Education_Some college, no degree
+Work Experience in a Related Occupation_5 years or more
+Work Experience in a Related Occupation_Less than 5 years
+Work Experience in a Related Occupation_nan
+Typical on-the-job Training_Apprenticeship
+Typical on-the-job Training_Internship/residency
+Typical on-the-job Training_Long-term on-the-job training
+Typical on-the-job Training_Moderate-term on-the-job training
+Typical on-the-job Training_Short-term on-the-job training
+Typical on-the-job Training_nan

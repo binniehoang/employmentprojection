@@ -39,18 +39,9 @@ def main():
 	df = df.drop_duplicates()
 	print(f"Shape after dropping duplicates: {df.shape}")
 
-	# Identify categorical columns to encode (exclude numeric columns)
-	categorical_cols = [
-		'Occupation Title',
-		'Typical Entry-Level Education',
-		'Work Experience in a Related Occupation',
-		'Typical on-the-job Training'
-	]
 
-	# Only encode categorical columns that exist in the DataFrame
-	cols_to_encode = [col for col in categorical_cols if col in df.columns]
-	df = pd.get_dummies(df, columns=cols_to_encode, drop_first=True)
-	print(f"Shape after encoding categorical variables: {df.shape}")
+	# Do NOT encode categorical columns here. Encoding will be handled in main.py for consistency.
+	print(f"Shape after cleaning (no encoding): {df.shape}")
 
 	# Save cleaned data
 	df.to_csv('data/cleaned_employment_projections.csv', index=False)
