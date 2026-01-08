@@ -1,3 +1,4 @@
+# feature selection for employment projections dataset
 import os
 def select_important_features(X, y, n_features=10, random_state=42):
 	"""
@@ -112,21 +113,26 @@ def handle_missing_values(X, strategy='mean'):
 	else:  # default to mean
 		return X.fillna(X.mean())
 
+# Add script entry point for standalone execution
+if __name__ == "__main__":
+	
 
+	df = load_cleaned_data()
+	# Remove commas and convert target column to float
+	df['Employment 2034'] = df['Employment 2034'].replace(',', '', regex=True).astype(float)
+	X, y = get_features_and_target(df)
+	X_encoded = encode_categorical_features(X)
+	X_encoded = handle_missing_values(X_encoded, strategy='mean')
+	X_scaled = scale_features(X_encoded)
+	X_selected = select_important_features(X_scaled, y, n_features=10)
 
-df = load_cleaned_data()
-# Remove commas and convert target column to float
-df['Employment 2034'] = df['Employment 2034'].replace(',', '', regex=True).astype(float)
-X, y = get_features_and_target(df)
-X_encoded = encode_categorical_features(X)
-X_encoded = handle_missing_values(X_encoded, strategy='mean')
-X_scaled = scale_features(X_encoded)
-X_selected = select_important_features(X_scaled, y, n_features=10)
-
-# Save selected features and target to files for modeling
-os.makedirs('model_data', exist_ok=True)
-X_selected.to_csv('model_data/selected_features.csv', index=False)
-y.to_csv('model_data/target.csv', index=False)
-print("Top 10 selected features saved to model_data/selected_features.csv")
-print("Target saved to model_data/target.csv")
-X_encoded.to_csv('data/encoded_features.csv', index=False)
+	# Save selected features and target to files for modeling
+	os.makedirs('model_data', exist_ok=True)
+	X_selected.to_csv('model_data/selected_features.csv', index=False)
+	y.to_csv('model_data/target.csv', index=False)
+	print("Top 10 selected features saved to model_data/selected_features.csv")
+	print("Target saved to model_data/target.csv")
+	X_encoded.to_csv('data/encoded_features.csv', index=False)
+	print("Encoded features saved to data/encoded_features.csv")
+	X_scaled.to_csv('data/scaled_features.csv', index=False)
+	print("Scaled features saved to data/scaled_features.csv")

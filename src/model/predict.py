@@ -1,4 +1,3 @@
-
 """
 Prediction script for employment projections model.
 
