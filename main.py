@@ -19,6 +19,50 @@ def main():
     print("Starting data preprocessing...")
     data_preprocessing.main()
 
+    # Check if model and features already exist
+    model_exists = os.path.exists(config.MODEL_PATH)
+    features_exist = os.path.exists(config.SELECTED_FEATURES_PATH)
+    encoder_path = os.path.join(os.path.dirname(config.SELECTED_FEATURES_PATH), 'onehot_encoder.joblib')
+    encoder_exists = os.path.exists(encoder_path)
+    
+    if model_exists and features_exist and encoder_exists:
+        print("Model and features already exist. Using existing preprocessing pipeline for consistency.")
+        # Load the existing encoder and feature names
+        encoder = joblib.load(encoder_path)
+        
+        # Load feature names that were used during training
+        feature_names_path = os.path.join(os.path.dirname(config.SELECTED_FEATURES_PATH), 'selected_feature_names.txt')
+        with open(feature_names_path, 'r') as f:
+            expected_features = [line.strip() for line in f.readlines()]
+        
+        print(f"Expected features for prediction: {expected_features}")
+        print("Skipping feature re-processing to maintain consistency.")
+        
+        # Jump directly to prediction
+        print("Generating predictions...")
+        predict.predict_model()
+        
+        print("Evaluating model...")
+        model_path = config.MODEL_PATH
+        test_data_path = config.SELECTED_FEATURES_PATH
+        predictions_path = config.PREDICTIONS_PATH
+        try:
+            evaluate.load_model(model_path)
+            test_data = evaluate.load_data(test_data_path)
+            predictions = pd.read_csv(predictions_path)
+            print(f"Loaded test data with {len(test_data)} rows for evaluation.")
+            print(f"Loaded predictions with {len(predictions)} rows for evaluation.")
+            
+            # Add comprehensive visualization
+            print("Creating comprehensive model visualizations...")
+            from src import visualization
+            visualization.create_model_summary_report()
+            
+        except Exception as e:
+            print(f"Evaluation failed: {e}")
+        return
+    
+    print("Training new model with consistent preprocessing pipeline...")
     print("Loading cleaned data and encoding features with consistent columns...")
     raw_data = pd.read_csv(config.PROCESSED_DATA_PATH)
     target = raw_data['Employment 2034']  # Adjust target column as needed
@@ -42,7 +86,7 @@ def main():
         X_full = pd.concat([X_numeric.reset_index(drop=True), X_encoded.reset_index(drop=True)], axis=1)
     else:
         X_full = X_numeric
-    # Save encoder for future use (optional)
+    # Save encoder for future use
     encoder_path = os.path.join(os.path.dirname(config.SELECTED_FEATURES_PATH), 'onehot_encoder.joblib')
     joblib.dump(encoder, encoder_path)
 
@@ -79,6 +123,12 @@ def main():
         predictions = pd.read_csv(predictions_path)
         print(f"Loaded test data with {len(test_data)} rows for evaluation.")
         print(f"Loaded predictions with {len(predictions)} rows for evaluation.")
+        
+        # Add comprehensive visualization
+        print("Creating comprehensive model visualizations...")
+        from src import visualization
+        visualization.create_model_summary_report()
+        
     except Exception as e:
         print(f"Evaluation failed: {e}")
 
