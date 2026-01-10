@@ -66,23 +66,7 @@ def main():
     train.main()
 
     print("Generating predictions...")
-    # Use the same encoded data for prediction as for training
-    pred_X_full = X_full.copy()
-    # Align columns
-    with open(full_feature_columns_path, 'r') as f:
-        full_columns = [line.strip() for line in f.readlines()]
-    for col in full_columns:
-        if col not in pred_X_full.columns:
-            pred_X_full[col] = 0
-    pred_X_full = pred_X_full[full_columns]
-    # Align to selected features
-    with open(feature_names_path, 'r') as f:
-        feature_names = [line.strip() for line in f.readlines()]
-    for col in feature_names:
-        if col not in pred_X_full.columns:
-            pred_X_full[col] = 0
-    pred_X_full = pred_X_full[feature_names]
-    pred_X_full.to_csv(config.SELECTED_FEATURES_PATH, index=False)
+    
     predict.predict_model()
 
     print("Evaluating model...")
