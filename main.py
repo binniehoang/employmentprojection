@@ -65,7 +65,7 @@ def main():
     print("Training new model with consistent preprocessing pipeline...")
     print("Loading cleaned data and encoding features with consistent columns...")
     raw_data = pd.read_csv(config.PROCESSED_DATA_PATH)
-    target = raw_data['Employment 2034']  # Adjust target column as needed
+    target = raw_data['Employment 2034'].replace({',': ''}, regex=True).astype(float) # Ensure numeric target values 
     non_numeric_cols = ['Occupation Title', 'Occupation Code']
     drop_cols = [col for col in non_numeric_cols if col in raw_data.columns]
     categorical_cols = [
@@ -75,9 +75,9 @@ def main():
     ]
     # Only encode categorical columns that exist
     cols_to_encode = [col for col in categorical_cols if col in raw_data.columns]
-    X = raw_data.drop(drop_cols + ['Employment 2034'], axis=1)
+    cols_to_drop = [col for col in drop_cols + ['Employment 2034'] if col in raw_data.columns]
     X_categorical = raw_data[cols_to_encode] if cols_to_encode else pd.DataFrame()
-    X_numeric = X.drop(cols_to_encode, axis=1) if cols_to_encode else X
+    X_numeric = raw_data.drop(cols_to_encode, axis=1) if cols_to_encode else raw_data
 
     encoder = OneHotEncoder(sparse_output=False, handle_unknown='ignore')
     if not X_categorical.empty:
@@ -89,6 +89,8 @@ def main():
     # Save encoder for future use
     encoder_path = os.path.join(os.path.dirname(config.SELECTED_FEATURES_PATH), 'onehot_encoder.joblib')
     joblib.dump(encoder, encoder_path)
+    if not X_categorical.empty:
+        joblib.dump(encoder, encoder_path)
 
     # Save the full set of columns for alignment
     full_feature_columns_path = os.path.join(os.path.dirname(config.SELECTED_FEATURES_PATH), 'full_feature_columns.txt')

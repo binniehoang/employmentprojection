@@ -116,7 +116,6 @@ def handle_missing_values(X, strategy='mean'):
 # Add script entry point for standalone execution
 if __name__ == "__main__":
 	
-
 	df = load_cleaned_data()
 	# Remove commas and convert target column to float
 	df['Employment 2034'] = df['Employment 2034'].replace(',', '', regex=True).astype(float)
