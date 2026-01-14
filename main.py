@@ -17,7 +17,14 @@ import joblib
 
 def main():
     print("Starting data preprocessing...")
-    data_preprocessing.main()
+    preprocessing_info = data_preprocessing.main()
+    
+    # Log preprocessing results for transparency
+    if preprocessing_info:
+        print(f"Preprocessing completed: {preprocessing_info['rows_processed']} rows processed")
+        print(f"Categorical encoding required: {preprocessing_info['encoding_required']}")
+        if preprocessing_info['encoding_required']:
+            print(f"Categorical columns to encode: {preprocessing_info['categorical_columns']}")
 
     # Check if model and features already exist
     model_exists = os.path.exists(config.MODEL_PATH)
@@ -28,7 +35,6 @@ def main():
     if model_exists and features_exist and encoder_exists:
         print("Model and features already exist. Using existing preprocessing pipeline for consistency.")
         # Load the existing encoder and feature names
-        encoder = joblib.load(encoder_path)
         
         # Load feature names that were used during training
         feature_names_path = os.path.join(os.path.dirname(config.SELECTED_FEATURES_PATH), 'selected_feature_names.txt')

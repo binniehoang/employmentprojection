@@ -37,7 +37,7 @@ def plot_actual_vs_predicted(y_true, y_pred, save_path=None):
     fig, ax = plt.subplots(figsize=(10, 8))
     
     # Create scatter plot
-    scatter = ax.scatter(y_true, y_pred, alpha=0.6, s=50)
+    ax.scatter(y_true, y_pred, alpha=0.6, s=50)
     
     # Add perfect prediction line
     min_val = min(min(y_true), min(y_pred))
@@ -82,7 +82,7 @@ def plot_residuals(y_true, y_pred, save_path=None):
     set_style()
     residuals = y_true - y_pred
     
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
+    _, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
     
     # Residuals vs Predicted
     ax1.scatter(y_pred, residuals, alpha=0.6)
@@ -215,7 +215,11 @@ def plot_prediction_errors_by_magnitude(y_true, y_pred, save_path=None):
     
     # Calculate absolute and percentage errors
     abs_errors = np.abs(y_true - y_pred)
-    pct_errors = (abs_errors / y_true) * 100
+    # Use small epsilon for zero actual values to avoid division by zero
+    epsilon = np.finfo(float).eps
+    safe_y_true = np.where(y_true == 0, epsilon, y_true)
+    pct_errors = (abs_errors / safe_y_true) * 100
+    
     
     # Create bins based on actual values
     bins = np.percentile(y_true, [0, 25, 50, 75, 100])
@@ -225,7 +229,7 @@ def plot_prediction_errors_by_magnitude(y_true, y_pred, save_path=None):
     bin_assignments = np.digitize(y_true, bins) - 1
     bin_assignments = np.clip(bin_assignments, 0, len(bin_labels) - 1)
     
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
+    _, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
     
     # Box plot of absolute errors by magnitude
     abs_error_data = [abs_errors[bin_assignments == i] for i in range(len(bin_labels))]
