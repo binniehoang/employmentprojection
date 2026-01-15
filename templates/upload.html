@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block title %}Batch Upload - Employment Projection App{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-10 mx-auto">
+        <h2 class="mb-4">
+            <i class="fas fa-upload text-success"></i>
+            Batch Predictions
+        </h2>
+        <p class="text-muted mb-4">
+            Upload a CSV file with occupation data to generate predictions for multiple entries at once.
+        </p>
+        
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5><i class="fas fa-file-csv"></i> Upload Data</h5>
+                        <form id="uploadForm" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <label for="fileInput" class="form-label">Choose CSV file</label>
+                                <input type="file" class="form-control" id="fileInput" accept=".csv" required>
+                                <div class="form-text">Select a CSV file containing occupation data</div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-upload"></i> Upload & Process
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h5><i class="fas fa-info-circle"></i> Required Columns</h5>
+                        <p>Your CSV file should contain the following columns:</p>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item"><small><strong>Employment 2024</strong> - Current employment (thousands)</small></li>
+                            <li class="list-group-item"><small><strong>Occupational Openings, 2024-2034 Annual Average</strong></small></li>
+                            <li class="list-group-item"><small><strong>Employment Percent Change, 2024-2034</strong></small></li>
+                            <li class="list-group-item"><small><strong>Employment Change, 2024-2034</strong></small></li>
+                            <li class="list-group-item"><small><strong>Median Annual Wage 2024</strong></small></li>
+                            <li class="list-group-item"><small><strong>trCode</strong> - Training code (3-6)</small></li>
+                        </ul>
+                        
+                        <div class="mt-3">
+                            <a href="#" class="btn btn-outline-primary btn-sm" onclick="downloadSample()">
+                                <i class="fas fa-download"></i> Download Sample CSV
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Upload Results -->
+        <div id="uploadResults" class="mt-4" style="display: none;">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-check-circle"></i> Upload Results</h5>
+                </div>
+                <div class="card-body">
+                    <div id="resultsContent"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Upload Progress -->
+        <div id="uploadProgress" class="mt-4" style="display: none;">
+            <div class="card">
+                <div class="card-body text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Processing...</span>
+                    </div>
+                    <p class="mt-2">Processing your file...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('uploadForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const fileInput = document.getElementById('fileInput');
+    const file = fileInput.files[0];
+    
+    if (!file) {
+        alert('Please select a file');
+        return;
+    }
+    
+    if (!file.name.endsWith('.csv')) {
+        alert('Please select a CSV file');
+        return;
+    }
+    
+    // Show progress
+    document.getElementById('uploadProgress').style.display = 'block';
+    document.getElementById('uploadResults').style.display = 'none';
+    
+    // Create FormData
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    // Upload file
+    fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('uploadProgress').style.display = 'none';
+        
+        if (data.error) {
+            alert('Error: ' + data.error);
+        } else {
+            // Display success results
+            const resultsHTML = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-chart-bar"></i> Processing Summary</h6>
+                        <ul class="list-unstyled">
+                            <li><strong>Records processed:</strong> ${data.predictions_count}</li>
+                            <li><strong>File saved to:</strong> <code>${data.output_file}</code></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-eye"></i> Sample Predictions</h6>
+                        <ul class="list-group list-group-flush">
+                            ${data.sample_predictions.map((pred, idx) => 
+                                `<li class="list-group-item d-flex justify-content-between">
+                                    <span>Record ${idx + 1}:</span>
+                                    <strong>${pred.toFixed(1)} thousand</strong>
+                                </li>`
+                            ).join('')}
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="mt-3 text-center">
+                    <a href="/results" class="btn btn-primary">
+                        <i class="fas fa-chart-line"></i> View Full Results
+                    </a>
+                </div>
+            `;
+            
+            document.getElementById('resultsContent').innerHTML = resultsHTML;
+            document.getElementById('uploadResults').style.display = 'block';
+            document.getElementById('uploadResults').scrollIntoView({ behavior: 'smooth' });
+        }
+    })
+    .catch(error => {
+        document.getElementById('uploadProgress').style.display = 'none';
+        alert('Error uploading file: ' + error);
+    });
+});
+
+function downloadSample() {
+    // Create a sample CSV content
+    const sampleData = `Employment 2024,Occupational Openings, 2024-2034 Annual Average,Employment Percent Change, 2024-2034,Employment Change, 2024-2034,Median Annual Wage 2024,trCode,Typical Entry-Level Education_Bachelor's degree,Typical Entry-Level Education_High school diploma or equivalent,Typical on-the-job Training_Short-term on-the-job training,Typical on-the-job Training_nan
+1579.8,124.2,4.6,72.8,81680,6,1,0,0,1
+33.6,2.4,21.8,7.3,125770,3,1,0,0,0
+15.3,0.9,6.8,1.0,78140,6,0,0,0,1`;
+    
+    const blob = new Blob([sampleData], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'sample_employment_data.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    
+    window.URL.revokeObjectURL(url);
+}
+</script>
+{% endblock %}
