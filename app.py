@@ -1,21 +1,23 @@
+import secrets
+# generating a secret key secure config file
 """
 Flask web application for Employment Projection ML model.
 Provides a user-friendly interface to interact with the trained model.
 """
 
-from flask import Flask, render_template, request, jsonify, flash, redirect, url_for
+from flask import Flask, render_template, request, jsonify, flash, send_file
 import pandas as pd
 import joblib
 import os
-import numpy as np
 from src import config
 import plotly.express as px
-import plotly.graph_objects as go
 from plotly.utils import PlotlyJSONEncoder
 import json
+from datetime import datetime
+import uuid
 
 app = Flask(__name__)
-app.secret_key = 'employment_projection_secret_key'  # Change this in production
+app.secret_key = os.environ.get('FLASK_SECRET_KEY') or secrets.token_hex(32)
 
 class EmploymentPredictor:
     def __init__(self):
@@ -95,6 +97,29 @@ class EmploymentPredictor:
 
 # Initialize predictor
 predictor = EmploymentPredictor()
+
+def cleanup_old_prediction_files(max_files=10):
+    """Clean up old prediction files, keeping only the most recent ones"""
+    try:
+        predictions_files = []
+        for file in os.listdir(config.MODEL_DATA_DIR):
+            if file.startswith('predictions_') and file.endswith('.csv'):
+                file_path = os.path.join(config.MODEL_DATA_DIR, file)
+                predictions_files.append((file_path, os.path.getmtime(file_path)))
+        
+        # Sort by modification time (newest first)
+        predictions_files.sort(key=lambda x: x[1], reverse=True)
+        
+        # Remove old files if we have more than max_files
+        if len(predictions_files) > max_files:
+            for file_path, _ in predictions_files[max_files:]:
+                try:
+                    os.remove(file_path)
+                    print(f"Cleaned up old prediction file: {os.path.basename(file_path)}")
+                except OSError as e:
+                    print(f"Error removing file {file_path}: {e}")
+    except Exception as e:
+        print(f"Error during cleanup: {e}")
 
 @app.route('/')
 def home():
@@ -202,14 +227,22 @@ def api_upload():
             # Add predictions to dataframe
             df['Predicted Employment 2034'] = predictions
             
-            # Save results
-            output_path = os.path.join(config.MODEL_DATA_DIR, 'uploaded_predictions.csv')
+            # Generate unique filename with timestamp
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            unique_id = str(uuid.uuid4())[:8]
+            filename = f'predictions_{timestamp}_{unique_id}.csv'
+            output_path = os.path.join(config.MODEL_DATA_DIR, filename)
             df.to_csv(output_path, index=False)
             
+            # Clean up old prediction files (keep only last 10)
+            cleanup_old_prediction_files()
+            
+            # Store the filename in session or return it for later download
             return jsonify({
                 'message': f'Successfully processed {len(df)} records',
                 'predictions_count': len(predictions),
                 'output_file': output_path,
+                'download_filename': filename,
                 'sample_predictions': predictions[:5].tolist()
             })
         
@@ -240,6 +273,42 @@ def model_info():
             'model_loaded': True
         })
         
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/download/predictions')
+def download_predictions():
+    """Download the latest prediction results as CSV"""
+    try:
+        # Look for the most recent predictions file
+        predictions_files = []
+        for file in os.listdir(config.MODEL_DATA_DIR):
+            if file.startswith('predictions_') and file.endswith('.csv'):
+                file_path = os.path.join(config.MODEL_DATA_DIR, file)
+                predictions_files.append((file_path, os.path.getmtime(file_path)))
+        
+        if not predictions_files:
+            # Fall back to the main predictions file if no uploaded predictions exist
+            if os.path.exists(config.PREDICTIONS_PATH):
+                return send_file(
+                    config.PREDICTIONS_PATH,
+                    as_attachment=True,
+                    download_name='employment_predictions.csv',
+                    mimetype='text/csv'
+                )
+            else:
+                return jsonify({'error': 'No prediction files found'}), 404
+        
+        # Get the most recent file
+        latest_file = max(predictions_files, key=lambda x: x[1])[0]
+        filename = os.path.basename(latest_file)
+        
+        return send_file(
+            latest_file,
+            as_attachment=True,
+            download_name=f'employment_{filename}',
+            mimetype='text/csv'
+        )
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 

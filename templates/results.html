@@ -78,7 +78,7 @@
                 <div class="card">
                     <div class="card-header">
                         <h5 class="mb-0">
-                            <i class="fas fa-scatter-plot"></i>
+                            <i class="fas fa-braille"></i>
                             Current vs Predicted Employment
                         </h5>
                     </div>
@@ -151,28 +151,44 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <script>
 // Render charts
 {% if graph1_json %}
-var graph1 = {{ graph1_json|safe }};
-Plotly.newPlot('chart1', graph1.data, graph1.layout);
+try {
+    var graph1 = {{ graph1_json|safe }};
+    Plotly.newPlot('chart1', graph1.data, graph1.layout);
+} catch (error) {
+    console.error('Error rendering chart1:', error);
+    document.getElementById('chart1').innerHTML = '<p class="text-center text-muted">Chart could not be loaded</p>';
+}
 {% endif %}
 
 {% if graph2_json %}
-var graph2 = {{ graph2_json|safe }};
-Plotly.newPlot('chart2', graph2.data, graph2.layout);
+try {
+    var graph2 = {{ graph2_json|safe }};
+    Plotly.newPlot('chart2', graph2.data, graph2.layout);
+} catch (error) {
+    console.error('Error rendering chart2:', error);
+    document.getElementById('chart2').innerHTML = '<p class="text-center text-muted">Chart could not be loaded</p>';
+}
 {% endif %}
 
 function downloadResults() {
-    // Create a link to download the predictions CSV
-    const link = document.createElement('a');
-    link.href = '/static/predictions.csv';  // You might need to adjust this path
-    link.download = 'employment_predictions.csv';
-    link.click();
+    try {
+        const link = document.createElement('a');
+        link.href = "{{ url_for('download_predictions') }}";
+        link.download = 'employment_predictions.csv';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    } catch (error) {
+        console.error('Download error:', error);
+        alert('Error downloading file. Please try again.');
+    }
 }
 
 function refreshResults() {
-    // Reload the page to get fresh data
     window.location.reload();
 }
 </script>
