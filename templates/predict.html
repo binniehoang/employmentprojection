@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block title %}Make Prediction - Employment Projection App{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <h2 class="mb-4">
+            <i class="fas fa-calculator text-primary"></i>
+            Employment Prediction
+        </h2>
+        <p class="text-muted mb-4">
+            Enter the occupation details below to predict employment numbers for 2034.
+        </p>
+        
+        <div class="card">
+            <div class="card-body">
+                <form id="predictionForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="employment2024" class="form-label">Employment 2024</label>
+                                <input type="number" class="form-control" id="employment2024" step="0.1" required>
+                                <div class="form-text">Current employment in thousands</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="occupationalOpenings" class="form-label">Occupational Openings (Annual Average)</label>
+                                <input type="number" class="form-control" id="occupationalOpenings" step="0.1" required>
+                                <div class="form-text">Average annual job openings 2024-2034</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="employmentPercentChange" class="form-label">Employment Percent Change</label>
+                                <input type="number" class="form-control" id="employmentPercentChange" step="0.1" required>
+                                <div class="form-text">Projected percent change 2024-2034</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="employmentChange" class="form-label">Employment Change</label>
+                                <input type="number" class="form-control" id="employmentChange" step="0.1" required>
+                                <div class="form-text">Projected employment change in thousands</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="medianWage" class="form-label">Median Annual Wage 2024</label>
+                                <input type="number" class="form-control" id="medianWage" step="1" required>
+                                <div class="form-text">Median annual wage in dollars</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="trCode" class="form-label">Training Code</label>
+                                <select class="form-select" id="trCode" required>
+                                    <option value="">Select training code</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4</option>
+                                    <option value="5">5</option>
+                                    <option value="6">6</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Education Level</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="bachelors">
+                                    <label class="form-check-label" for="bachelors">
+                                        Bachelor's degree required
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="highschool">
+                                    <label class="form-check-label" for="highschool">
+                                        High school diploma or equivalent
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">On-the-Job Training</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="shortTermTraining">
+                                    <label class="form-check-label" for="shortTermTraining">
+                                        Short-term on-the-job training
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="noTraining">
+                                    <label class="form-check-label" for="noTraining">
+                                        No specific training required
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-calculator"></i> Predict Employment
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Results Section -->
+        <div id="predictionResults" class="card mt-4" style="display: none;">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-check-circle"></i> Prediction Results</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Predicted Employment 2034</h6>
+                        <p class="display-6 text-primary" id="predictionValue">-</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Input Summary</h6>
+                        <div id="inputSummary"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('predictionForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Collect form data
+    const formData = {
+        'Employment 2024': parseFloat(document.getElementById('employment2024').value),
+        'Occupational Openings, 2024-2034 Annual Average': parseFloat(document.getElementById('occupationalOpenings').value),
+        'Employment Percent Change, 2024-2034': parseFloat(document.getElementById('employmentPercentChange').value),
+        'Employment Change, 2024-2034': parseFloat(document.getElementById('employmentChange').value),
+        'Median Annual Wage 2024': parseFloat(document.getElementById('medianWage').value),
+        'trCode': parseInt(document.getElementById('trCode').value),
+        'Typical Entry-Level Education_Bachelor\'s degree': document.getElementById('bachelors').checked ? 1 : 0,
+        'Typical Entry-Level Education_High school diploma or equivalent': document.getElementById('highschool').checked ? 1 : 0,
+        'Typical on-the-job Training_Short-term on-the-job training': document.getElementById('shortTermTraining').checked ? 1 : 0,
+        'Typical on-the-job Training_nan': document.getElementById('noTraining').checked ? 1 : 0
+    };
+    
+    // Show loading state
+    const submitBtn = document.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Predicting...';
+    
+    // Make API call
+    fetch('/api/predict', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert('Error: ' + data.error);
+        } else {
+            // Display results
+            document.getElementById('predictionValue').textContent = data.prediction.toLocaleString('en-US', {
+                minimumFractionDigits: 1,
+                maximumFractionDigits: 1
+            }) + ' thousand';
+            
+            // Show input summary
+            const summary = `
+                <small>
+                    <strong>Current Employment:</strong> ${formData['Employment 2024']} thousand<br>
+                    <strong>Projected Change:</strong> ${formData['Employment Percent Change, 2024-2034']}%<br>
+                    <strong>Median Wage:</strong> $${formData['Median Annual Wage 2024'].toLocaleString()}
+                </small>
+            `;
+            document.getElementById('inputSummary').innerHTML = summary;
+            
+            document.getElementById('predictionResults').style.display = 'block';
+            document.getElementById('predictionResults').scrollIntoView({ behavior: 'smooth' });
+        }
+    })
+    .catch(error => {
+        alert('Error making prediction: ' + error);
+    })
+    .finally(() => {
+        // Reset button
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-calculator"></i> Predict Employment';
+    });
+});
+</script>
+{% endblock %}

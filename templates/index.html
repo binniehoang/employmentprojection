@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block title %}Employment Projection App - Home{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto text-center">
+        <h1 class="display-4 mb-4">
+            <i class="fas fa-chart-line text-primary"></i>
+            Employment Projection App
+        </h1>
+        <p class="lead mb-5">
+            Predict future employment trends using advanced machine learning models.
+            Analyze occupation data and forecast employment numbers for 2034.
+        </p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <i class="fas fa-calculator fa-3x text-primary mb-3"></i>
+                <h5 class="card-title">Single Prediction</h5>
+                <p class="card-text">Enter occupation details and get instant employment predictions for 2034.</p>
+                <a href="{{ url_for('predict_page') }}" class="btn btn-primary">Make Prediction</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <i class="fas fa-upload fa-3x text-success mb-3"></i>
+                <h5 class="card-title">Batch Processing</h5>
+                <p class="card-text">Upload a CSV file to predict employment for multiple occupations at once.</p>
+                <a href="{{ url_for('upload_page') }}" class="btn btn-success">Upload Data</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <i class="fas fa-chart-bar fa-3x text-info mb-3"></i>
+                <h5 class="card-title">View Results</h5>
+                <p class="card-text">Explore existing predictions with interactive charts and detailed analytics.</p>
+                <a href="{{ url_for('results_page') }}" class="btn btn-info">View Results</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-10 mx-auto">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="fas fa-info-circle"></i> About This Application</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-robot"></i> Machine Learning Model</h6>
+                        <p>Built using Random Forest regression to predict future employment based on historical data and occupation characteristics.</p>
+                        
+                        <h6><i class="fas fa-database"></i> Data Features</h6>
+                        <ul>
+                            <li>Current employment numbers (2024)</li>
+                            <li>Occupational openings</li>
+                            <li>Employment percent change</li>
+                            <li>Education requirements</li>
+                            <li>Median wage information</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-target"></i> Prediction Target</h6>
+                        <p>The model predicts employment numbers for the year 2034, helping with workforce planning and career guidance.</p>
+                        
+                        <h6><i class="fas fa-chart-line"></i> Model Performance</h6>
+                        <p>The trained model provides accurate predictions based on comprehensive employment projection data from the U.S. Bureau of Labor Statistics.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12 text-center">
+        <div class="btn-group" role="group">
+            <button type="button" class="btn btn-outline-primary" onclick="loadModelInfo()">
+                <i class="fas fa-info"></i> Model Information
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Model Info Modal -->
+<div class="modal fade" id="modelInfoModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Model Information</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="modelInfoContent">
+                <div class="text-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function loadModelInfo() {
+    const modal = new bootstrap.Modal(document.getElementById('modelInfoModal'));
+    modal.show();
+    
+    fetch('/api/model-info')
+        .then(response => response.json())
+        .then(data => {
+            let content = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Model Type</h6>
+                        <p>${data.model_type}</p>
+                        
+                        <h6>Feature Count</h6>
+                        <p>${data.feature_count} features</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Model Status</h6>
+                        <p><span class="badge bg-success">Loaded Successfully</span></p>
+                    </div>
+                </div>
+                
+                <h6 class="mt-3">Feature Names</h6>
+                <div class="row">
+            `;
+            
+            data.feature_names.forEach(feature => {
+                content += `<div class="col-md-6"><small>${feature}</small></div>`;
+            });
+            
+            content += `</div>`;
+            
+            document.getElementById('modelInfoContent').innerHTML = content;
+        })
+        .catch(error => {
+            document.getElementById('modelInfoContent').innerHTML = `
+                <div class="alert alert-danger">
+                    Error loading model information: ${error}
+                </div>
+            `;
+        });
+}
+</script>
+{% endblock %}
