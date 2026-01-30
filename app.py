@@ -157,28 +157,100 @@ def api_predict():
 def results_page():
     """View existing predictions and results"""
     try:
-        # Load existing predictions
-        predictions_df = pd.read_csv(config.PREDICTIONS_PATH)
+        # Look for the most recent predictions file
+        predictions_files = []
+        for file in os.listdir(config.MODEL_DATA_DIR):
+            if file.startswith('predictions_') and file.endswith('.csv'):
+                file_path = os.path.join(config.MODEL_DATA_DIR, file)
+                predictions_files.append((file_path, os.path.getmtime(file_path)))
+        
+        predictions_df = None
+        file_used = None
+        
+        # Use the most recent predictions file, or fall back to the default
+        if predictions_files:
+            # Get the most recent file
+            latest_file = max(predictions_files, key=lambda x: x[1])[0]
+            predictions_df = pd.read_csv(latest_file)
+            file_used = latest_file
+            print(f"Loading predictions from: {latest_file}")
+            print(f"Columns in file: {list(predictions_df.columns)}")
+            print(f"Number of rows: {len(predictions_df)}")
+        elif os.path.exists(config.PREDICTIONS_PATH):
+            # Fall back to the default predictions file
+            predictions_df = pd.read_csv(config.PREDICTIONS_PATH)
+            file_used = config.PREDICTIONS_PATH
+            print(f"Loading predictions from default: {config.PREDICTIONS_PATH}")
+        else:
+            # No predictions found
+            print("No prediction files found")
+            return render_template('results.html', 
+                                 error="No prediction results found. Please upload a file first or run the model training.")
+        
+        # Verify required columns exist
+        required_columns = ['Employment 2024', 'Predicted Employment 2034']
+        missing_columns = [col for col in required_columns if col not in predictions_df.columns]
+        if missing_columns:
+            error_msg = f"Missing required columns: {missing_columns}. Available columns: {list(predictions_df.columns)}"
+            print(error_msg)
+            return render_template('results.html', error=error_msg)
         
         # Create visualizations
-        fig1 = px.histogram(
-            predictions_df, 
-            x='Predicted Employment 2034',
-            title='Distribution of Predicted Employment 2034',
-            nbins=30
-        )
+        try:
+            fig1 = px.histogram(
+                predictions_df, 
+                x='Predicted Employment 2034',
+                title='Distribution of Predicted Employment 2034',
+                nbins=30
+            )
+            print("Histogram created successfully")
+        except Exception as e:
+            print(f"Error creating histogram: {e}")
+            fig1 = None
         
-        fig2 = px.scatter(
-            predictions_df,
-            x='Employment 2024',
-            y='Predicted Employment 2034',
-            title='Employment 2024 vs Predicted Employment 2034',
-            trendline='ols'
-        )
+        # Create scatter plot with optional trendline
+        try:
+            # Try to create with OLS trendline (requires statsmodels)
+            fig2 = px.scatter(
+                predictions_df,
+                x='Employment 2024',
+                y='Predicted Employment 2034',
+                title='Employment 2024 vs Predicted Employment 2034',
+                trendline='ols'
+            )
+            print("Scatter plot with OLS created successfully")
+        except Exception as e:
+            print(f"OLS trendline failed: {e}")
+            try:
+                # Fallback to scatter plot without trendline
+                fig2 = px.scatter(
+                    predictions_df,
+                    x='Employment 2024',
+                    y='Predicted Employment 2034',
+                    title='Employment 2024 vs Predicted Employment 2034'
+                )
+                print("Fallback scatter plot created successfully")
+            except Exception as e2:
+                print(f"Fallback scatter plot also failed: {e2}")
+                fig2 = None
         
         # Convert plots to JSON
-        graph1_json = json.dumps(fig1, cls=PlotlyJSONEncoder)
-        graph2_json = json.dumps(fig2, cls=PlotlyJSONEncoder)
+        graph1_json = None
+        graph2_json = None
+        
+        if fig1 is not None:
+            try:
+                graph1_json = json.dumps(fig1, cls=PlotlyJSONEncoder)
+                print("Graph1 JSON created successfully")
+            except Exception as e:
+                print(f"Error converting fig1 to JSON: {e}")
+        
+        if fig2 is not None:
+            try:
+                graph2_json = json.dumps(fig2, cls=PlotlyJSONEncoder)
+                print("Graph2 JSON created successfully")
+            except Exception as e:
+                print(f"Error converting fig2 to JSON: {e}")
         
         # Get summary statistics
         stats = {
@@ -188,6 +260,8 @@ def results_page():
             'min_predicted_employment': predictions_df['Predicted Employment 2034'].min()
         }
         
+        print(f"Stats calculated: {stats}")
+        
         return render_template('results.html',
                              graph1_json=graph1_json,
                              graph2_json=graph2_json,
@@ -195,6 +269,9 @@ def results_page():
                              predictions=predictions_df.head(20).to_dict('records'))
         
     except Exception as e:
+        print(f"Error in results_page: {str(e)}")
+        import traceback
+        traceback.print_exc()
         flash(f'Error loading results: {str(e)}', 'error')
         return render_template('results.html', error=str(e))
 
@@ -243,7 +320,7 @@ def api_upload():
                 'predictions_count': len(predictions),
                 'output_file': output_path,
                 'download_filename': filename,
-                'sample_predictions': predictions[:5].tolist()
+                'predictions': predictions.tolist()
             })
         
         else:
